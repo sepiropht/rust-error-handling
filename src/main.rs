@@ -1,4 +1,5 @@
 use std::env;
+use std::num::ParseIntError;
 fn main() {
     // change input to make me panic!
     guess(9);
@@ -16,6 +17,13 @@ fn main() {
 
     assert_eq!(extention_explicit("foobar.csv").unwrap_or("rs"), "csv");
     assert_eq!(extention_explicit_map("foobar").unwrap_or("rs"), "rs");
+
+    let num = "k10";
+
+    match double_number("10") {
+        Ok(n) => assert_eq!(n, 20),
+        Err(err) => println!("Error: {:?}", err),
+    }
 }
 
 fn guess(n: i32) {
@@ -24,11 +32,11 @@ fn guess(n: i32) {
     }
 
     // run with wrong arg to make me panic!
-    let mut argv = env::args();
-    let arg: String = argv.nth(1).unwrap();
-    println!("{}", arg);
-    let n: i32 = arg.parse().unwrap();
-    println!("{}", 2 * n);
+        match double_arg(env::args()) {
+                    Ok(n) => println!("{}", n),
+                            Err(err) => println!("Error: {}", err),
+                                }
+
 }
 
 fn find(word: &str, needle: char) -> Option<usize> {
@@ -47,7 +55,16 @@ fn extention_explicit(file_name: &str) -> Option<&str> {
     }
 }
 
-
 fn extention_explicit_map(file_name: &str) -> Option<&str> {
     find(file_name, '.').map(|i| &file_name[i + 1..])
+}
+
+fn double_number(number: &str) -> Result<i32, ParseIntError> {
+    number.parse::<i32>().map(|num| 2 * num)
+}
+
+fn double_arg(mut argv: env::Args) -> Result<i32, String> {
+        argv.nth(1)
+                    .ok_or("Please give at least one argument".to_owned())
+                            .and_then(|arg| arg.parse::<i32>().map_err(|err| err.to_string()))
 }
